@@ -1,0 +1,154 @@
+/* app.css — slideshow shell, liquid glass, tilt worlds (web only) */
+:root{--t:0;--tl:0;--tr:0;--ta:0;--chrome-top:58px;--chrome-bot:78px;--pink:#ff2d78;--cyan:#22e4ff}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:#07060c;color:#fff;overflow:hidden;-webkit-tap-highlight-color:transparent;overscroll-behavior:none}
+body{font-family:'Inter','Noto Sans CJK JP',sans-serif;touch-action:pan-y pinch-zoom}
+#bgfx{position:fixed;inset:-10%;pointer-events:none;
+  background:radial-gradient(60% 50% at calc(20% - var(--t)*10%) 30%,rgba(255,45,120,calc(.10 + var(--tl)*.25)),transparent 70%),
+             radial-gradient(60% 50% at calc(80% - var(--t)*10%) 70%,rgba(34,228,255,calc(.08 + var(--tr)*.18)),transparent 70%)}
+
+/* ---------- stage ---------- */
+#stage{position:fixed;left:0;right:0;top:var(--chrome-top);bottom:var(--chrome-bot);display:flex;align-items:center;justify-content:center}
+.slide{position:absolute;left:50%;top:50%;width:1123px;height:794px;margin:-397px 0 0 -561.5px;transform:scale(var(--fit,1));
+  display:none;border-radius:6px;box-shadow:0 40px 90px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.08)}
+.slide.on{display:block;animation:slideIn .55s cubic-bezier(.2,.8,.2,1) backwards}
+.slide.on.back{animation-name:slideInBack}
+@keyframes slideIn{from{opacity:0;transform:scale(var(--fit)) translateX(40px)}to{opacity:1;transform:scale(var(--fit))}}
+@keyframes slideInBack{from{opacity:0;transform:scale(var(--fit)) translateX(-40px)}to{opacity:1;transform:scale(var(--fit))}}
+.slide .page{border-radius:6px}
+
+/* ---------- world layers (inserted right after the seam background, behind content) ---------- */
+.world-layer{position:absolute;inset:-24px;pointer-events:none;will-change:opacity,transform}
+.world-layer svg{width:100%;height:100%;display:block}
+.world-layer.wa{opacity:calc(var(--tl) * var(--wmax,1));translate:calc(var(--t) * -16px) 0}
+.world-layer.wh{opacity:calc(var(--tr) * var(--wmax,1));translate:calc(var(--t) * -16px) 0}
+.slide[data-kind="project"]{--wmax:.42}
+/* once a world is shown, the seam background fades a little so the world reads through */
+.slide .seam-bg{opacity:calc(1 - var(--ta) * var(--wmax,1) * .35)}
+.petal{animation:petal linear infinite;transform-box:fill-box;transform-origin:center}
+@keyframes petal{0%{transform:translate(0,-60px) rotate(0)}50%{transform:translate(28px,40px) rotate(160deg)}100%{transform:translate(-10px,140px) rotate(340deg)}}
+.tw{animation:tw 2.6s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+@keyframes tw{0%,100%{opacity:.25;transform:scale(.6)}50%{opacity:1;transform:scale(1.15)}}
+.blink{animation:blink 5s steps(1) infinite}
+@keyframes blink{0%,92%{opacity:1}93%,97%{opacity:0}98%{opacity:1}}
+.flick{animation:flick 6s steps(1) infinite}
+@keyframes flick{0%,40%,44%,100%{opacity:1}41%,43%{opacity:.25}70%{opacity:.8}72%{opacity:1}}
+
+/* ---------- parallax sway on images ---------- */
+.px{translate:calc(var(--t) * var(--d,10px)) calc(var(--ta) * -3px)}
+
+/* ---------- liquid glass on panels across all slides ---------- */
+.gl{-webkit-backdrop-filter:blur(calc(var(--ta) * 14px)) saturate(calc(1 + var(--ta) * .5));backdrop-filter:blur(calc(var(--ta) * 14px)) saturate(calc(1 + var(--ta) * .5));
+  background-color:rgba(10,8,22,calc(var(--ta) * var(--glassdim,.5)))}
+.slide[data-kind="project"] .gl{--glassdim:.7}
+.gl.rel{position:relative}
+.gl::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:1;
+  background:linear-gradient(calc(115deg + var(--t) * 40deg),rgba(255,255,255,.30) 0%,rgba(255,255,255,.06) 22%,transparent 40%,transparent 70%,rgba(255,255,255,.10) 100%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.45),inset 0 -1px 0 rgba(255,255,255,.08),inset 1px 0 0 rgba(255,255,255,.12);
+  opacity:calc(var(--ta) * .9);mix-blend-mode:screen}
+/* keep text crisp over revealed worlds */
+.slide .page{--tsh:0 1px 2px rgba(0,0,0,calc(var(--ta) * .8)),0 0 calc(var(--ta) * 14px) rgba(0,0,0,calc(var(--ta) * .75))}
+.slide .page :is(h1,h2,h3,p,li,.h-en,.h-jp,.lead,.kicker,.caption,.note,.meta,.num,.vlabel,.world,.label-chip,.bnl,.lpl,.points,.ex-title,.dv-h,.dv-p,.dv-tag,.pr-name,.pr-st,.pr-str,.toc,.wm,.wm-sub,.cv-ttl,.cv-tag,.k,.v,.c,.pn,.pf){text-shadow:var(--tsh)}
+
+/* ---------- chrome (glass UI) ---------- */
+.glassui{background:linear-gradient(calc(150deg + var(--t) * 30deg),rgba(255,255,255,.16),rgba(255,255,255,.05) 50%,rgba(255,255,255,.10));
+  -webkit-backdrop-filter:blur(18px) saturate(1.6);backdrop-filter:blur(18px) saturate(1.6);
+  border:1px solid rgba(255,255,255,.22);box-shadow:inset 0 1px 0 rgba(255,255,255,.35),inset 0 -1px 0 rgba(255,255,255,.06),0 10px 30px rgba(0,0,0,.35);
+  color:#fff;border-radius:999px;position:relative;overflow:hidden}
+.glassui::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  background:radial-gradient(120% 80% at calc(30% + var(--t) * 40%) 0%,rgba(255,255,255,.35),transparent 55%);mix-blend-mode:screen}
+button.glassui{white-space:nowrap;font:600 12px/1 'Inter','Noto Sans CJK JP',sans-serif;letter-spacing:.08em;padding:10px 14px;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+button.glassui:hover{border-color:rgba(255,255,255,.45)}
+button.glassui:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+#progress{position:fixed;left:0;top:0;height:3px;width:0;background:linear-gradient(90deg,var(--pink),#b46bff,var(--cyan));transition:width .5s cubic-bezier(.2,.8,.2,1);z-index:30;box-shadow:0 0 12px rgba(255,45,120,.6)}
+#top{position:fixed;left:0;right:0;top:0;height:var(--chrome-top);display:flex;align-items:center;justify-content:space-between;padding:8px 16px;z-index:20;gap:10px}
+#brand{display:flex;align-items:center;gap:10px;padding:7px 14px 7px 8px;font:700 11px/1 'Unbounded','Inter',sans-serif;letter-spacing:.14em;white-space:nowrap}
+#brand svg{width:26px;height:26px}
+#brand small{font:500 10px/1 'Inter',sans-serif;letter-spacing:.16em;opacity:.7}
+#tools{display:flex;gap:8px;align-items:center}
+#sound .eq{display:inline-flex;gap:2px;align-items:flex-end;height:12px}
+#sound .eq i{width:3px;background:#fff;border-radius:2px;height:4px;opacity:.6}
+#sound[aria-pressed="true"] .eq i{animation:eq .9s ease-in-out infinite;opacity:1;background:linear-gradient(var(--cyan),var(--pink))}
+#sound[aria-pressed="true"] .eq i:nth-child(2){animation-delay:-.3s}#sound[aria-pressed="true"] .eq i:nth-child(3){animation-delay:-.6s}
+@keyframes eq{0%,100%{height:3px}50%{height:12px}}
+#motion{display:none}
+#bot{position:fixed;left:0;right:0;bottom:0;height:var(--chrome-bot);display:flex;align-items:center;justify-content:center;gap:12px;z-index:20;padding:0 12px}
+#nav{display:flex;align-items:center;gap:10px;padding:8px 10px}
+#nav .arrow{width:38px;height:38px;border-radius:50%;padding:0;justify-content:center;font-size:16px}
+#dots{display:flex;gap:7px;align-items:center;padding:0 4px}
+#dots button{width:9px;height:9px;border-radius:50%;border:0;padding:0;background:rgba(255,255,255,.3);cursor:pointer;transition:all .3s}
+#dots button[aria-current="true"]{width:26px;border-radius:6px;background:linear-gradient(90deg,var(--pink),var(--cyan))}
+#count{font:600 11px/1 'JetBrains Mono',monospace;letter-spacing:.1em;min-width:58px;text-align:center;opacity:.85}
+#hint{position:fixed;left:16px;bottom:calc(var(--chrome-bot) / 2 - 17px);display:flex;align-items:center;gap:10px;padding:9px 14px;font:500 11px/1 'Noto Sans CJK JP',sans-serif;z-index:21;white-space:nowrap}
+#hint .meter{position:relative;width:70px;height:4px;border-radius:2px;background:linear-gradient(90deg,#ff7bb0,rgba(255,255,255,.3),#9fe8d8)}
+#hint .meter i{position:absolute;top:-4px;left:calc(50% + var(--t) * 35px - 6px);width:12px;height:12px;border-radius:50%;background:#fff;box-shadow:0 0 10px #fff}
+#rotate{display:none}
+@media (max-width:900px){
+  :root{--chrome-top:52px;--chrome-bot:64px}
+  #brand small,#hint .lbl{display:none}
+  #hint{left:auto;right:10px;top:58px;bottom:auto;padding:7px 10px}
+  #dots{display:none}
+  button.glassui{padding:9px 11px;font-size:11px}
+}
+@media (max-width:600px){
+  #brand span,#pdf{display:none!important}
+  #brand{padding:6px}
+  #tools{gap:6px}
+}
+@media (max-height:500px){
+  :root{--chrome-top:46px;--chrome-bot:54px}
+  #top{padding:5px 10px}
+  button.glassui{padding:7px 10px}
+  #nav{padding:5px 8px}#nav .arrow{width:32px;height:32px}
+  #hint{top:50px}
+}
+@media (max-width:600px) and (orientation:portrait){
+  #rotate{display:block;position:fixed;left:50%;bottom:calc(var(--chrome-bot) + 10px);transform:translateX(-50%);padding:8px 14px;font:500 11px/1.2 'Noto Sans CJK JP',sans-serif;z-index:21;white-space:nowrap}
+}
+/* reduced motion = softer, not frozen (only ?static freezes): no flashing, gentler entrance, slower ambient motion */
+.soft-motion .slide.on{animation:slideFade .5s ease backwards}
+@keyframes slideFade{from{opacity:0}to{opacity:1}}
+.soft-motion .blink,.soft-motion .flick{animation:none!important}
+.soft-motion .petal,.soft-motion .tw{animation-duration:14s!important}
+
+
+/* ---------- background name layer: big ZILOLA wordmark between world layers and content ---------- */
+.name-layer{position:absolute;inset:0;pointer-events:none;display:flex;align-items:center;justify-content:center;
+  translate:calc(var(--t) * -26px) calc(var(--ta) * -6px);
+  color:rgb(calc(255 - var(--tr) * 70) calc(255 - var(--tl) * 125) calc(255 - var(--tl) * 70 - var(--tr) * 5))}
+.name-layer .nl-glow{position:absolute;left:12%;right:12%;top:22%;bottom:22%;border-radius:50%;
+  background:radial-gradient(closest-side,rgba(150,110,255,.55),rgba(120,240,210,.25) 60%,transparent);
+  opacity:calc(var(--tr) * .35);will-change:opacity}
+.name-layer .nl-breath{position:relative;width:84%;opacity:.15;will-change:transform,opacity;animation:nlBreath 5.2s ease-in-out infinite}
+.name-layer .nl-svg{display:block;width:100%;height:auto;overflow:visible}
+.name-layer .nl-ch{transform-box:fill-box;transform-origin:50% 60%;animation:nlWave 3.8s ease-in-out infinite;
+  animation-delay:calc(var(--i) * .32s - 3.8s)}
+@keyframes nlBreath{0%,100%{transform:scale(.97);opacity:.12}50%{transform:scale(1.03);opacity:.2}}
+@keyframes nlWave{0%,100%{transform:translateY(0) rotate(0) skewX(0)}
+  25%{transform:translateY(-70px) rotate(-1.6deg) skewX(-2deg)}
+  50%{transform:translateY(0) rotate(0) skewX(0)}
+  75%{transform:translateY(70px) rotate(1.6deg) skewX(2deg)}}
+.nl-static .name-layer .nl-breath,.nl-static .name-layer .nl-ch{animation:none}
+#play{font-size:12px!important;letter-spacing:-2px}
+#play[aria-pressed="true"]{background:linear-gradient(135deg,rgba(255,45,120,.35),rgba(34,228,255,.3))}
+.soft-motion .name-layer .nl-breath{animation-duration:8s}
+.soft-motion .name-layer .nl-ch{animation-name:nlWaveSoft;animation-duration:7s;animation-delay:calc(var(--i) * .6s - 7s)}
+@keyframes nlWaveSoft{0%,100%{transform:translateY(0)}25%{transform:translateY(-28px)}75%{transform:translateY(28px)}}
+
+/* ---------- up-tilt overview grid ---------- */
+#overview{position:fixed;inset:0;z-index:40;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:70px 24px 24px;
+  background:rgba(7,6,12,.55);-webkit-backdrop-filter:blur(18px) saturate(1.3);backdrop-filter:blur(18px) saturate(1.3);
+  opacity:0;pointer-events:none;transform:translateY(-14px);transition:opacity .35s ease,transform .35s ease}
+#overview.on{opacity:1;pointer-events:auto;transform:none}
+#overview .ov-head{display:flex;gap:14px;align-items:baseline;padding:10px 16px;font:500 11px/1.3 'Noto Sans CJK JP',sans-serif}
+#overview .ov-head b{font:700 13px/1 'Unbounded',sans-serif;letter-spacing:.14em}
+#overview .ov-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;width:min(1180px,100%);overflow:auto;max-height:calc(100vh - 150px);padding:4px}
+#overview .ov-item{display:flex;flex-direction:column;gap:6px;padding:6px;border-radius:12px;cursor:pointer;color:#fff;text-align:left}
+#overview .ov-item img{width:100%;aspect-ratio:297/210;object-fit:cover;border-radius:7px;display:block}
+#overview .ov-item span{font:600 11px/1.2 'Inter','Noto Sans CJK JP',sans-serif;letter-spacing:.04em;padding:0 2px 2px}
+#overview .ov-item i{font:600 10px/1 'JetBrains Mono',monospace;font-style:normal;margin-right:6px;color:#9fe8d8}
+#overview .ov-item[aria-current]{outline:2px solid #ff7bb0;outline-offset:1px}
+
+/* ?static: everything frozen (debug / screenshots) */
+.nl-static .slide.on,.nl-static .petal,.nl-static .tw,.nl-static .blink,.nl-static .flick,.nl-static #sound .eq i{animation:none!important}
+.nl-static #overview{transition:none}
