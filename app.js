@@ -116,7 +116,7 @@
   /* ---------- tilt: target from device gamma or mouse X, rAF lerp ---------- */
   let target = 0, tilt = 0, gotOrientation = false;
   const clamp = (v) => Math.max(-1, Math.min(1, v));
-  let manual = null, wLabel = null; // manual world choice (-1 kawaii / 1 horror) overrides tilt & mouse
+  let manual = null, wLabel = null, soundTouched = false, soundLabel = () => {}; // manual world choice (-1 kawaii / 1 horror) overrides tilt & mouse
   function onOrient(e) {
     if (e.gamma == null || manual !== null) return;
     if (!gotOrientation) { gotOrientation = true; motionBtn.style.display = 'none'; }
@@ -174,6 +174,10 @@
       root.classList.add('wt-anim'); clearTimeout(wBtn._t); wBtn._t = setTimeout(() => root.classList.remove('wt-anim'), 700);
       tilt = manual; apply(tilt); // jump immediately (frame-rate independent); CSS fades it
       if (window.PortfolioSound) window.PortfolioSound.setTilt(tilt, true); // music crossfades to the chosen world
+      if (!soundTouched && window.PortfolioSound) { // first toggle tap also starts the music (only once; never forces it back on)
+        soundTouched = true;
+        if (!window.PortfolioSound.isOn()) Promise.resolve(window.PortfolioSound.start()).then(() => { window.PortfolioSound.setTilt(tilt, true); soundLabel(); });
+      }
       label();
     });
     label();
@@ -192,12 +196,23 @@
 
   /* ---------- sound toggle (off by default, starts on tap) ---------- */
   const sBtn = document.getElementById('sound');
+  soundLabel = () => {
+    const onNow = !!(window.PortfolioSound && window.PortfolioSound.isOn());
+    sBtn.setAttribute('aria-pressed', onNow ? 'true' : 'false');
+    sBtn.querySelector('span:last-child').textContent = onNow ? 'SOUND ON' : 'SOUND OFF';
+    if (muteBtn) muteBtn.hidden = !onNow;
+  };
+  const muteBtn = document.getElementById('mute');
+  if (muteBtn) muteBtn.addEventListener('click', (e) => {
+    e.stopPropagation(); soundTouched = true; // stays off: toggle never restarts it
+    if (window.PortfolioSound && window.PortfolioSound.isOn()) Promise.resolve(window.PortfolioSound.stop()).then(soundLabel); else soundLabel();
+  });
   sBtn.addEventListener('click', () => {
     if (!window.PortfolioSound) return;
+    soundTouched = true;
     Promise.resolve(window.PortfolioSound.toggle()).then((st) => {
       const onNow = window.PortfolioSound.isOn();
-      sBtn.setAttribute('aria-pressed', onNow ? 'true' : 'false');
-      sBtn.querySelector('span:last-child').textContent = onNow ? 'SOUND ON' : 'SOUND OFF';
+      soundLabel();
       if (onNow) window.PortfolioSound.setTilt(tilt, true);
     });
   });
