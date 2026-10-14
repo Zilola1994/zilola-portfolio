@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>マーケティングKPIダッシュボード（Vue.js）｜元好 ジローラ</title>
+<meta name="description" content="Vue 3で作成したマーケティングKPIダッシュボードのデモ（サンプルデータ使用）">
+<style>
+@font-face{font-family:'Anton';src:url(../fonts/anton.woff2) format('woff2')}
+@font-face{font-family:'Unbounded';src:url(../fonts/unbounded.woff2) format('woff2');font-weight:200 900}
+@font-face{font-family:'Inter';src:url(../fonts/inter.woff2) format('woff2');font-weight:100 900}
+@font-face{font-family:'JetBrains Mono';src:url(../fonts/jbmono.woff2) format('woff2');font-weight:100 800}
+@font-face{font-family:'Noto Sans JP';src:url(../fonts/notojp-400.woff2) format('woff2');font-weight:400}
+@font-face{font-family:'Noto Sans JP';src:url(../fonts/notojp-700.woff2) format('woff2');font-weight:700 900}
+:root{--bg:#08080F;--bg2:#0E0E19;--text:#F5F4FA;--muted:#A3A2B8;--dim:#6D6C84;--pink:#FF2D78;--pink2:#FF6FA5;--cyan:#22E5FF;--violet:#7B5CFF;--yellow:#FFD84D;--mint:#9CF5C4;--line2:rgba(255,255,255,.16);--r:16px;
+--n:var(--cyan);--a:var(--pink);--a2:var(--violet);--l:rgba(255,255,255,.08);--g:var(--muted);--ink:var(--text)}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Inter','Noto Sans JP','Hiragino Sans',sans-serif;color:var(--text);line-height:1.6;min-height:100vh;
+background:radial-gradient(50% 40% at 15% 10%,rgba(255,45,120,.18),transparent 70%),radial-gradient(50% 40% at 90% 60%,rgba(34,228,255,.12),transparent 70%),radial-gradient(40% 30% at 40% 100%,rgba(123,92,255,.15),transparent 70%),var(--bg);background-attachment:fixed}
+body:before{content:"✦  ✕  ♡  ✦  ✕";position:fixed;right:18px;top:14px;font-size:12px;letter-spacing:.6em;color:var(--mint);opacity:.5;pointer-events:none}
+header{padding:30px 20px 18px;border-bottom:1px dashed rgba(255,45,120,.45)}
+.wrap{max-width:1100px;margin:0 auto;padding:0 20px}
+header a{font-family:'JetBrains Mono',monospace;font-size:.78rem;letter-spacing:.14em;color:var(--cyan);text-decoration:none}
+header a:hover{color:var(--pink2)}
+.kick{font-family:'JetBrains Mono',monospace;font-size:.72rem;letter-spacing:.25em;color:var(--pink);margin-top:16px}
+header h1{margin:2px 0 4px;font-family:'Anton','Noto Sans JP',sans-serif;font-weight:400;font-size:clamp(1.9rem,5vw,3rem);letter-spacing:.03em;line-height:1.1;background:linear-gradient(90deg,#fff,var(--pink2) 60%,var(--violet));-webkit-background-clip:text;background-clip:text;color:transparent}
+header h2{margin:0 0 6px;font-size:1rem;font-weight:700}
+header p{margin:0;color:var(--muted);font-size:.9rem}
+.badge{display:inline-block;background:var(--yellow);color:#1a1300;border-radius:999px;padding:3px 12px;font-size:.78rem;font-weight:700;margin-top:12px}
+main{padding:24px 0 48px}
+.card{background:linear-gradient(160deg,rgba(255,255,255,.07),rgba(255,255,255,.025));border:1px solid var(--line2);border-radius:var(--r);padding:18px;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.kpis{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:14px;margin-bottom:18px}
+.kpi{position:relative;overflow:hidden}.kpi:after{content:"♡";position:absolute;right:12px;top:8px;color:var(--pink);opacity:.35;font-size:.9rem}
+.kpi small{color:var(--muted);font-size:.78rem}.kpi b{display:block;font-family:'Unbounded','Inter',sans-serif;font-size:1.05rem;color:#fff;margin-top:4px;font-weight:600;white-space:nowrap}
+.kpi b span{font-family:'Inter',sans-serif}
+.filters{display:flex;flex-wrap:wrap;gap:12px;align-items:end;margin-bottom:18px}
+label{font-size:.78rem;color:var(--muted);display:flex;flex-direction:column;gap:4px}
+select,input{font:inherit;padding:8px 10px;border:1px solid var(--line2);border-radius:10px;background:var(--bg2);color:var(--text);min-width:150px}
+select:focus,input:focus{outline:2px solid var(--pink);outline-offset:1px}
+button.reset{font:inherit;font-weight:700;padding:8px 16px;border:0;border-radius:999px;background:linear-gradient(90deg,var(--pink),var(--violet));color:#fff;cursor:pointer}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px}
+.card h2{font-family:'JetBrains Mono','Noto Sans JP',monospace;font-size:.85rem;letter-spacing:.08em;margin:0 0 12px;color:var(--cyan)}
+.card h2:before{content:"✦ ";color:var(--yellow)}
+.bar{display:grid;grid-template-columns:110px 1fr 100px;gap:8px;align-items:center;font-size:.85rem;margin:9px 0}
+.track{background:rgba(255,255,255,.07);border-radius:8px;height:14px;overflow:hidden}.fill{height:100%;background:linear-gradient(90deg,var(--pink),var(--violet),var(--cyan));border-radius:8px;transition:width .4s;box-shadow:0 0 12px rgba(255,45,120,.5)}
+.num{text-align:right;color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:.8rem}
+.tbl{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:.85rem;min-width:720px}
+th,td{padding:10px 8px;border-bottom:1px solid rgba(255,255,255,.07);text-align:right;white-space:nowrap}th:first-child,td:first-child,th:nth-child(2),td:nth-child(2){text-align:left}
+th{color:var(--muted);font-weight:600;cursor:pointer;user-select:none}th:hover{color:var(--pink2)}
+tbody tr:hover{background:rgba(255,45,120,.06)}
+tfoot td{font-weight:700;color:var(--yellow);border-top:1px dashed var(--pink)}
+.ch{display:inline-block;padding:2px 9px;border-radius:999px;background:rgba(34,229,255,.12);color:var(--cyan);font-size:.74rem;border:1px solid rgba(34,229,255,.3)}
+.empty{text-align:center;color:var(--muted);padding:24px}
+footer{text-align:center;color:var(--dim);font-family:'JetBrains Mono',monospace;font-size:.72rem;letter-spacing:.12em;padding:20px}
+@media(max-width:1000px){.kpis{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(max-width:560px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:760px){.grid{grid-template-columns:1fr}.bar{grid-template-columns:80px 1fr 80px}body:before{display:none}}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+<a href="../">← BACK TO PORTFOLIO ／ ポートフォリオに戻る</a>
+<div class="kick">WEB APP · VUE 3</div>
+<h1>MARKETING KPI DASHBOARD</h1>
+<h2>マーケティングKPIダッシュボード</h2>
+<p>Vue 3（CDN版）で作成した、広告キャンペーンの成果を可視化・分析するデモアプリです。</p>
+<span class="badge">※ 表示データはすべて架空のサンプルデータです</span>
+</div></header>
+<main><div class="wrap" id="app" v-cloak>
+ <div class="filters card">
+  <label>チャネル<select v-model="channel"><option value="">すべて</option><option v-for="c in channels" :key="c">{{ c }}</option></select></label>
+  <label>月<select v-model="month"><option value="">すべて</option><option v-for="m in months" :key="m">{{ m }}</option></select></label>
+  <label>キャンペーン検索<input v-model.trim="q" placeholder="例：秋セール"></label>
+  <button class="reset" @click="reset">リセット</button>
+ </div>
+ <div class="kpis">
+  <div class="card kpi"><small>広告費</small><b>{{ yen(t.cost) }}</b></div>
+  <div class="card kpi"><small>表示回数</small><b>{{ n(t.imp) }}</b></div>
+  <div class="card kpi"><small>CTR（クリック率）</small><b>{{ pct(t.clk, t.imp) }}</b></div>
+  <div class="card kpi"><small>CV数（CVR）</small><b>{{ n(t.cv) }} <span style="font-size:.85rem;color:var(--muted)">({{ pct(t.cv, t.clk) }})</span></b></div>
+  <div class="card kpi"><small>CPA（獲得単価）</small><b>{{ t.cv ? yen(t.cost / t.cv) : '-' }}</b></div>
+  <div class="card kpi"><small>ROAS</small><b>{{ t.cost ? Math.round(t.rev / t.cost * 100) + '%' : '-' }}</b></div>
+ </div>
+ <div class="grid">
+  <div class="card"><h2>チャネル別 CV数</h2>
+   <div class="bar" v-for="r in byChannel" :key="r.k"><span>{{ r.k }}</span><div class="track"><div class="fill" :style="{width: r.cv / maxCh * 100 + '%'}"></div></div><span class="num">{{ n(r.cv) }}</span></div>
+   <p v-if="!byChannel.length" class="empty">該当データがありません</p></div>
+  <div class="card"><h2>月別 売上</h2>
+   <div class="bar" v-for="r in byMonth" :key="r.k"><span>{{ r.k }}</span><div class="track"><div class="fill" :style="{width: r.rev / maxMo * 100 + '%'}"></div></div><span class="num">{{ yen(r.rev) }}</span></div>
+   <p v-if="!byMonth.length" class="empty">該当データがありません</p></div>
+ </div>
+ <div class="card tbl"><h2>キャンペーン一覧（見出しクリックで並び替え）</h2>
+  <table><thead><tr><th v-for="c in cols" :key="c.k" @click="sortBy(c.k)">{{ c.l }}{{ sortKey === c.k ? (asc ? ' ▲' : ' ▼') : '' }}</th></tr></thead>
+  <tbody><tr v-for="r in sorted" :key="r.id"><td>{{ r.name }}</td><td><span class="ch">{{ r.ch }}</span></td><td>{{ r.m }}</td><td>{{ yen(r.cost) }}</td><td>{{ n(r.imp) }}</td><td>{{ n(r.clk) }}</td><td>{{ pct(r.clk, r.imp) }}</td><td>{{ n(r.cv) }}</td><td>{{ r.cv ? yen(r.cost / r.cv) : '-' }}</td><td>{{ yen(r.rev) }}</td></tr>
+  <tr v-if="!sorted.length"><td colspan="10" class="empty">条件に一致するキャンペーンがありません</td></tr></tbody>
+  <tfoot v-if="sorted.length"><tr><td>合計（{{ sorted.length }}件）</td><td></td><td></td><td>{{ yen(t.cost) }}</td><td>{{ n(t.imp) }}</td><td>{{ n(t.clk) }}</td><td>{{ pct(t.clk, t.imp) }}</td><td>{{ n(t.cv) }}</td><td>{{ t.cv ? yen(t.cost / t.cv) : '-' }}</td><td>{{ yen(t.rev) }}</td></tr></tfoot>
+  </table></div>
+</div></main>
+<footer>ZILOLA MOTOYOSHI · DIGITAL DESIGN PORTFOLIO ｜ Vue 3 · HTML · CSS · JavaScript ｜ 個人開発デモ（サンプルデータ）</footer>
+<style>[v-cloak]{display:none}</style>
+<script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+<script>
+const raw=[["秋セール 検索広告","検索広告","2025-10",420000,380000,15200,610,2480000],["秋セール SNS広告","SNS広告","2025-10",310000,920000,11040,276,1150000],["新規会員 メルマガ","メール","2025-10",60000,120000,6000,240,720000],["ブランド認知 動画","動画広告","2025-10",500000,1800000,9000,90,410000],["秋セール 検索広告","検索広告","2025-11",450000,410000,17220,689,2810000],["リターゲティング","ディスプレイ","2025-11",220000,640000,5120,205,980000],["新規会員 メルマガ","メール","2025-11",65000,125000,6500,286,860000],["インフルエンサー施策","SNS広告","2025-11",380000,1100000,13200,330,1420000],["年末キャンペーン 検索","検索広告","2025-12",520000,450000,19800,832,3390000],["リターゲティング","ディスプレイ","2025-12",240000,700000,5880,247,1120000],["ブランド認知 動画","動画広告","2025-12",540000,2000000,10400,114,520000],["休眠顧客 掘り起こし","メール","2025-12",55000,98000,5390,269,940000]];
+const rows=raw.map((r,i)=>({id:i,name:r[0],ch:r[1],m:r[2],cost:r[3],imp:r[4],clk:r[5],cv:r[6],rev:r[7]}));
+const sum=a=>a.reduce((s,r)=>({cost:s.cost+r.cost,imp:s.imp+r.imp,clk:s.clk+r.clk,cv:s.cv+r.cv,rev:s.rev+r.rev}),{cost:0,imp:0,clk:0,cv:0,rev:0});
+const group=(a,k)=>Object.entries(a.reduce((g,r)=>((g[r[k]]=g[r[k]]||[]).push(r),g),{})).map(([key,v])=>({k:key,...sum(v)}));
+Vue.createApp({data:()=>({rows,channel:"",month:"",q:"",sortKey:"cv",asc:false,cols:[{k:"name",l:"キャンペーン"},{k:"ch",l:"チャネル"},{k:"m",l:"月"},{k:"cost",l:"広告費"},{k:"imp",l:"表示回数"},{k:"clk",l:"クリック"},{k:"ctr",l:"CTR"},{k:"cv",l:"CV"},{k:"cpa",l:"CPA"},{k:"rev",l:"売上"}]}),
+computed:{channels(){return[...new Set(rows.map(r=>r.ch))]},months(){return[...new Set(rows.map(r=>r.m))]},
+filtered(){return this.rows.filter(r=>(!this.channel||r.ch===this.channel)&&(!this.month||r.m===this.month)&&(!this.q||r.name.includes(this.q)))},
+sorted(){const v=r=>this.sortKey==="ctr"?r.clk/r.imp:this.sortKey==="cpa"?(r.cv?r.cost/r.cv:Infinity):r[this.sortKey];return[...this.filtered].sort((a,b)=>{const x=v(a),y=v(b);const c=typeof x==="string"?x.localeCompare(y,"ja"):x-y;return this.asc?c:-c})},
+t(){return sum(this.filtered)},byChannel(){return group(this.filtered,"ch").sort((a,b)=>b.cv-a.cv)},byMonth(){return group(this.filtered,"m").sort((a,b)=>a.k.localeCompare(b.k))},
+maxCh(){return Math.max(1,...this.byChannel.map(r=>r.cv))},maxMo(){return Math.max(1,...this.byMonth.map(r=>r.rev))}},
+methods:{sortBy(k){this.asc=this.sortKey===k?!this.asc:false;this.sortKey=k},reset(){this.channel=this.month=this.q=""},
+yen:v=>"¥"+Math.round(v).toLocaleString("ja-JP"),n:v=>v.toLocaleString("ja-JP"),pct:(a,b)=>b?(a/b*100).toFixed(2)+"%":"-"}}).mount("#app");
+</script>
+</body></html>
