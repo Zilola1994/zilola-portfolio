@@ -283,6 +283,7 @@
 <header id="top">
   <div id="brand" class="glassui"><svg viewBox="0 0 40 40"><use href="#zm"/></svg><span><b class="zl">ZILOLA</b>MOTOYOSHI</span><small>DIGITAL DESIGN PORTFOLIO</small></div>
   <div id="tools">
+    <button id="worldtoggle" class="glassui" type="button" aria-pressed="false" aria-label="可愛い／ホラーの世界を切替"><span class="wt-k">🐰 可愛い</span><span class="wt-sep">/</span><span class="wt-h">🧟 ホラー</span></button>
     <button id="motion" class="glassui" type="button"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M3 8c-1 2-1 6 0 8M21 8c1 2 1 6 0 8"/></svg><span>モーションON</span></button>
     <button id="sound" class="glassui" type="button" aria-pressed="false" aria-label="サウンド切替"><span class="eq"><i></i><i></i><i></i></span><span>SOUND OFF</span></button>
     <a id="pdf" class="glassui" href="portfolio.pdf" target="_blank" rel="noopener" style="display:inline-block;text-decoration:none;font:600 12px/1 Inter,sans-serif;letter-spacing:.08em;padding:10px 14px">PDF</a>
@@ -457,6 +458,12 @@
 @keyframes kcPop{50%{transform:scale(1.06)}}
 @keyframes kcTxt{0%{opacity:0}4%,30%{opacity:1}34%,100%{opacity:0}}
 @keyframes kcLive{50%{opacity:.55}}
+#worldtoggle{display:inline-flex;align-items:center;gap:6px;font:700 12px/1 'Noto Sans JP','Inter',sans-serif;color:#fff;cursor:pointer;border:1px solid rgba(255,111,165,.7);box-shadow:0 0 10px rgba(255,45,120,.45)}
+#worldtoggle span{opacity:.45;transition:opacity .2s,color .2s}#worldtoggle .wt-sep{opacity:.35}
+#worldtoggle .wt-k.on{opacity:1;color:#FF9FC4;text-shadow:0 0 6px rgba(255,45,120,.8)}#worldtoggle .wt-h.on{opacity:1;color:#9CF5C4;text-shadow:0 0 6px rgba(156,245,196,.8)}
+@media (max-width:640px){#worldtoggle{position:fixed;left:10px;top:calc(var(--chrome-top) + 6px);z-index:21;font-size:12px;padding:8px 12px}}
+.wt-anim .world-layer,.wt-anim .kchar svg,.wt-anim #bgfx{transition:opacity .6s ease}
+#worldtoggle[data-world=horror]{border-color:rgba(156,245,196,.7);box-shadow:0 0 10px rgba(156,245,196,.45)}
 @media (prefers-reduced-motion:reduce){.kcta,.kchar .kc-b,.kchar .kc-sw,.kchar .kc-h,.kchar .kc-e,.kchar .kc-bub,.kc-live{animation:none}.kchar .kc-t2,.kchar .kc-t3{animation:none;opacity:0}.kchar .kc-t1{animation:none;opacity:1}}
 </style></div>
       <div style="grid-column:span 2;color:var(--muted);font-size:10px"><em style="background:var(--cyan)"></em>CONCEPT WORK（自主制作）　<em style="background:var(--pink)"></em>PROJECT / EXPERIENCE（実務）</div>

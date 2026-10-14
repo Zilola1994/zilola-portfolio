@@ -116,8 +116,9 @@
   /* ---------- tilt: target from device gamma or mouse X, rAF lerp ---------- */
   let target = 0, tilt = 0, gotOrientation = false;
   const clamp = (v) => Math.max(-1, Math.min(1, v));
+  let manual = null, wLabel = null; // manual world choice (-1 kawaii / 1 horror) overrides tilt & mouse
   function onOrient(e) {
-    if (e.gamma == null) return;
+    if (e.gamma == null || manual !== null) return;
     if (!gotOrientation) { gotOrientation = true; motionBtn.style.display = 'none'; }
     const ang = (screen.orientation && screen.orientation.angle) || window.orientation || 0;
     let deg = e.gamma;
@@ -125,10 +126,10 @@
     target = clamp(deg / 25);
   }
   window.addEventListener('pointermove', (e) => {
-    if (e.pointerType !== 'mouse' || gotOrientation) return;
+    if (e.pointerType !== 'mouse' || gotOrientation || manual !== null) return;
     target = clamp((e.clientX / window.innerWidth) * 2 - 1);
   });
-  document.addEventListener('mouseleave', () => { if (!gotOrientation) target = 0; });
+  document.addEventListener('mouseleave', () => { if (!gotOrientation && manual === null) target = 0; });
   const motionBtn = document.getElementById('motion');
   const coarse = window.matchMedia('(pointer: coarse)').matches;
   const needsPermission = coarse && typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function';
@@ -150,7 +151,33 @@
     root.style.setProperty('--tl', a.toFixed(4));
     root.style.setProperty('--tr', b.toFixed(4));
     root.style.setProperty('--ta', Math.max(a, b).toFixed(4));
-    if (window.PortfolioSound) window.PortfolioSound.setTilt(t);
+    if (window.PortfolioSound) window.PortfolioSound.setTilt(t, t === target);
+    if (wLabel) wLabel();
+  }
+  /* ---------- world toggle button (manual choice wins over tilt/mouse) ---------- */
+  const wBtn = document.getElementById('worldtoggle');
+  if (wBtn) {
+    let asked = false;
+    const label = () => {
+      const h = manual !== null ? manual === 1 : tilt > 0.06;
+      if (wBtn.dataset.world === (h ? 'horror' : 'kawaii')) return;
+      wBtn.dataset.world = h ? 'horror' : 'kawaii';
+      wBtn.setAttribute('aria-pressed', h ? 'true' : 'false');
+      wBtn.querySelector('.wt-k').classList.toggle('on', !h);
+      wBtn.querySelector('.wt-h').classList.toggle('on', h);
+    };
+    wBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (!asked && needsPermission) { asked = true; try { DeviceOrientationEvent.requestPermission().catch(() => {}); } catch (_) {} }
+      manual = (manual === null ? (tilt > 0.06 ? 1 : -1) : manual) === 1 ? -1 : 1;
+      target = manual;
+      root.classList.add('wt-anim'); clearTimeout(wBtn._t); wBtn._t = setTimeout(() => root.classList.remove('wt-anim'), 700);
+      tilt = manual; apply(tilt); // jump immediately (frame-rate independent); CSS fades it
+      if (window.PortfolioSound) window.PortfolioSound.setTilt(tilt, true); // music crossfades to the chosen world
+      label();
+    });
+    label();
+    wLabel = label;
   }
   if (dbgTilt !== null) { target = tilt = dbgTilt; apply(tilt); }
   else if (reduce) { apply(0); }
@@ -170,8 +197,8 @@
     Promise.resolve(window.PortfolioSound.toggle()).then((st) => {
       const onNow = window.PortfolioSound.isOn();
       sBtn.setAttribute('aria-pressed', onNow ? 'true' : 'false');
-      sBtn.querySelector('span').textContent = onNow ? 'SOUND ON' : 'SOUND OFF';
-      if (onNow) window.PortfolioSound.setTilt(tilt);
+      sBtn.querySelector('span:last-child').textContent = onNow ? 'SOUND ON' : 'SOUND OFF';
+      if (onNow) window.PortfolioSound.setTilt(tilt, true);
     });
   });
 

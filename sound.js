@@ -7,7 +7,7 @@
      RIGHT (tilt > 0) : the SAME melody as an eerie music box + detuned toy piano,
                         reharmonized toward minor, sparse rhythm, soft low drone
    Rewrite the music by editing CONFIG and the stem*() functions below.
-   Public API: window.PortfolioSound = { toggle(), start(), stop(), setTilt(t), isOn() }
+   Public API: window.PortfolioSound = { toggle(), start(), stop(), setTilt(t, force), isOn(), gains() }
    ========================================================================== */
 (function () {
   'use strict';
@@ -200,7 +200,8 @@
     CONFIG,
     start, stop,
     toggle() { return on ? (stop(), Promise.resolve(false)) : start(); },
-    setTilt(t) { tilt = Math.max(-1, Math.min(1, t)); if (on) applyGains(false); },
+    setTilt(t, force) { tilt = Math.max(-1, Math.min(1, t)); if (on) applyGains(!!force); },
+    gains() { return ctx ? { L: bus.L.gain.value, N: bus.N.gain.value, R: bus.R.gain.value, state: ctx.state, on } : null; },
     isOn: () => on
   };
 })();
